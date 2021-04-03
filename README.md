@@ -66,3 +66,17 @@ Check one more time with `terraform plan`, you should see
 No changes. Infrastructure is up-to-date.
 ```
 
+### Network provisioning - VPC, public subnets
+
+Go to `terraform/eu-west-1/network` directory
+
+Review `.tf` files there, we are going to create VPC with 3 public subnets - one for each AZ
+
+Run `terraform plan`
+
+Check changes, if they look good, apply it with `terraform apply`
+
+Check one more time with `terraform plan`, you should see
+```shell script
+No changes. Infrastructure is up-to-date.
+```
