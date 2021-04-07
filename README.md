@@ -111,3 +111,21 @@ Review `.tf` files, in `cluster.tf` there is a definition of `app-dev` ECS clust
 Run `terraform plan`
 
 Check changes, if they look good, apply it with `terraform apply`
+
+### Create flask app, build app docker image
+
+Sample app code is in `app/` directory
+
+Login to AWS ECR
+change AWS_ID by your AWS account id
+```
+export AWS_ID=1234567890
+AWS_PROFILE=yourusername aws ecr get-login-password --region=eu-west-1|docker login --username AWS --password-stdin $AWS_ID.dkr.ecr.eu-west-1.amazonaws.com`
+```
+
+Build docker image and push it to ECR
+```
+docker build --tag $AWS_ID.dkr.ecr.eu-west-1.amazonaws.com/flask-app app/
+docker push $AWS_ID.dkr.ecr.eu-west-1.amazonaws.com/flask-app
+```
+
