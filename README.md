@@ -9,7 +9,7 @@ or `us-east-1/s3/terraform.tfstate` file per
 directory.
 
 The idea is to have state splitted per region/service, allowing
-faster execution and collaboration.
+faster `terraform plan/apply` execution and collaboration between team members.
 
 Locks are placed in DynamoDB, taken before `plan` / `apply`.
 
@@ -80,3 +80,11 @@ Check one more time with `terraform plan`, you should see
 ```shell script
 No changes. Infrastructure is up-to-date.
 ```
+
+During this step, security groups limiting access to AWS entities, like EC2/ECS/RDS/etc will be added:
+* `local` - allow traffic inside VPC
+* `ssh` - allow incoming ssh traffic
+* `http_https` - allow incoming http/https traffic
+
+
+
