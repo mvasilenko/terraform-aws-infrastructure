@@ -52,7 +52,7 @@ Go to AWS web console, create private S3 bucket `yourusername-tfstate` for terra
 
 Create DynamoDB, needed for locks - allow only one change at a time.
 
-Go to `terraform/eu-west-1/main` directory (`eu-west-1` is the same as S3 bucket region)
+Open `terraform/eu-west-1/main` directory (`eu-west-1` is the same as S3 bucket region)
 
 Review `.tf` files there
 
@@ -68,7 +68,7 @@ No changes. Infrastructure is up-to-date.
 
 ### Network provisioning - VPC, public subnets
 
-Go to `terraform/eu-west-1/network` directory
+Open `terraform/eu-west-1/network` directory
 
 Review `.tf` files there, we are going to create VPC with 3 public subnets - one for each AZ
 
@@ -90,7 +90,7 @@ During this step, security groups limiting access to AWS entities, like EC2/ECS/
 
 We need AWS to have IAM role for running container to be able to make requests to other AWS services,
 
-Go to `terraform/global/iam` directory
+Open `terraform/global/iam` directory
 
 Review `.tf` files, in `flask_app.tf` there is an IAM policy with pull permissions to ECR repo access
 with our app docker image
@@ -104,7 +104,7 @@ Check changes, if they look good, apply it with `terraform apply`
 One of the ways of running dockerized apps in AWS is to use ECS cluster, it is managed container orchestrator.
 Let's create ECS cluster named `app-dev`
 
-Go to `terraform/eu-west-1/ecs/app` directory
+Open `terraform/eu-west-1/ecs/app` directory
 
 Review `.tf` files, in `cluster.tf` there is a definition of `app-dev` ECS cluster
 
@@ -128,4 +128,30 @@ Build docker image and push it to ECR
 docker build --tag $AWS_ID.dkr.ecr.eu-west-1.amazonaws.com/flask-app app/
 docker push $AWS_ID.dkr.ecr.eu-west-1.amazonaws.com/flask-app
 ```
+
+### Create Load balancer, listener
+
+To receive traffic from internet, we need to create LoadBalancer,
+listener (by protocol - HTTP/HTTPS)
+
+open `terraform/eu-west-1/lb` directory,
+review `.tf` files
+
+Run `terraform plan`
+
+### Create listener rule, target group
+
+To run task in ECS we need to create task definition, service,
+and attach service to load balancer via target group.
+
+The idea is to keep infrastructure code  separated from app code,
+infrastructure code is in `terraform/eu-west-1/ecs/app`,
+we define target group and load balancer listener rule there.
+
+Open `terraform/eu-west-1/ecs/app` directory,
+Review `.tf` files
+
+Run `terraform plan`
+
+Check changes, if they look good, apply it with `terraform apply`
 
