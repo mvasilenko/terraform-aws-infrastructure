@@ -86,5 +86,12 @@ During this step, security groups limiting access to AWS entities, like EC2/ECS/
 * `ssh` - allow incoming ssh traffic
 * `http_https` - allow incoming http/https traffic
 
+### IAM role provisioning
 
+We need AWS to have IAM role for running container to be able to make requests to other AWS services,
+
+Go to `terraform/global/iam` directory
+
+Review `.tf` files, in `flask_app.tf` there is an IAM policy with pull permissions to ECR repo access
+with our app docker image
 
