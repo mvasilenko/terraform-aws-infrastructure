@@ -95,3 +95,19 @@ Go to `terraform/global/iam` directory
 Review `.tf` files, in `flask_app.tf` there is an IAM policy with pull permissions to ECR repo access
 with our app docker image
 
+Run `terraform plan`
+
+Check changes, if they look good, apply it with `terraform apply`
+
+### ECS cluster
+
+One of the ways of running dockerized apps in AWS is to use ECS cluster, it is managed container orchestrator.
+Let's create ECS cluster named `app-dev`
+
+Go to `terraform/eu-west-1/ecs/app` directory
+
+Review `.tf` files, in `cluster.tf` there is a definition of `app-dev` ECS cluster
+
+Run `terraform plan`
+
+Check changes, if they look good, apply it with `terraform apply`
