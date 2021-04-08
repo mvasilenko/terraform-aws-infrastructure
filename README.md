@@ -35,7 +35,8 @@ create new user in IAM, assign `AdministratorAccess` policy to this user
 Logout as root user, login as newly created admin-user, enable MFA,
 generate access/secret keys, put them in `aws configure --profile yourusername`
 
-Set active AWS CLI profile by exporting environment variable
+Set active AWS CLI profile by exporting environment variable,
+this is useful is you have multiple AWS accounts
 
 ```shell script
 export AWS_PROFILE=yourusername
@@ -112,22 +113,28 @@ Run `terraform plan`
 
 Check changes, if they look good, apply it with `terraform apply`
 
-### Create flask app, build app docker image
+### Create flask app, build and push app docker image
 
-Sample app code is in `app/` directory
+Sample app code is in `app/` directory, open it by `cd app`
 
-Login to AWS ECR
-change AWS_ID by your AWS account id
+Login to AWS ECR used by your AWS account id
+
 ```
-export AWS_ID=1234567890
-AWS_PROFILE=yourusername aws ecr get-login-password --region=eu-west-1|docker login --username AWS --password-stdin $AWS_ID.dkr.ecr.eu-west-1.amazonaws.com`
+export AWS_ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
+aws ecr get-login-password --region=eu-west-1|docker login --username AWS --password-stdin $AWS_ACCOUNT_ID.dkr.ecr.eu-west-1.amazonaws.com`
 ```
 
 Build docker image and push it to ECR
+If we will not specify the image tag, the default tag `:latest` will be used,
+this is considered bad practice and should be avoided
+
 ```
-docker build --tag $AWS_ID.dkr.ecr.eu-west-1.amazonaws.com/flask-app app/
-docker push $AWS_ID.dkr.ecr.eu-west-1.amazonaws.com/flask-app
+export hash=$(git rev-parse --short HEAD)
+docker build -t $AWS_ACCOUNT_ID.dkr.ecr.eu-west-1.amazonaws.com/flask-app:$hash app/
+docker push $AWS_ACCOUNT_ID.dkr.ecr.eu-west-1.amazonaws.com/flask-app:$hash
 ```
+
+or just run `app/build.sh`
 
 ### Create Load balancer, listener
 
@@ -139,14 +146,19 @@ review `.tf` files
 
 Run `terraform plan`
 
+Check changes, if they look good, apply it with `terraform apply`
+
 ### Create listener rule, target group
 
 To run task in ECS we need to create task definition, service,
 and attach service to load balancer via target group.
 
-The idea is to keep infrastructure code  separated from app code,
-infrastructure code is in `terraform/eu-west-1/ecs/app`,
-we define target group and load balancer listener rule there.
+The idea below is to keep infrastructure code (target group, LB listener rules)
+separated from the app code (task and service definitions),
+the should be split to different repos.
+
+Infrastructure code located in `terraform/eu-west-1/ecs/app`,
+target group and load balancer listener rules defined there.
 
 Open `terraform/eu-west-1/ecs/app` directory,
 Review `.tf` files
@@ -157,19 +169,29 @@ Check changes, if they look good, apply it with `terraform apply`
 
 ### DNS (not covered)
 
-For app to be available from the Internet, need to set resolve on desired hostname `flask.mvasilenko.me`
-to the LB CNAME 
+For app to be available from the Internet, need to have desired hostname  resolved
+to the LB by setting DNS record:
 
-### Deploy application
+`flask.mvasilenko.me CNAME alb-12345678.eu-west-1.elb.amazonaws.com`
+
+### Deploy application - first time
+
+```shell script
+cd app/deploy
+terraform apply -var image_tag=$hash
+```
+
+### Deploy updates to the application
 
 Make some changes in the app, like change "Hello world" to "Hello container" in `app.py`
+Test and commit changes, so git commit hash will change
 
-Rebuild app image
+Rebuild app image by running `app/build.sh` or manually
 
 ```shell script
 export hash=$(git rev-parse --short HEAD)
-docker build --tag $AWS_ID.dkr.ecr.eu-west-1.amazonaws.com/flask-app:$hash app/
-docker push $AWS_ID.dkr.ecr.eu-west-1.amazonaws.com/flask-app:$hash
+docker build --tag $AWS_ACCOUNT_ID.dkr.ecr.eu-west-1.amazonaws.com/flask-app:$hash app/
+docker push $AWS_ACCOUNT_ID.dkr.ecr.eu-west-1.amazonaws.com/flask-app:$hash
 ```
 
 Deploy new version, updated image

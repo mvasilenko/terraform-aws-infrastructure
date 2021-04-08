@@ -3,12 +3,13 @@ provider "aws" {
 }
 
 terraform {
-  required_version = ">= 0.11.10"
+  required_version = ">= 0.11.14"
 
   backend "s3" {
     bucket         = "mvasilenko-tfstate"
-    key            = "eu-west-1/main/terraform.tfstate"
+    key            = "eu-west-1/dns/terraform.tfstate"
     region         = "eu-west-1"
     dynamodb_table = "mvasilenko-terraform-statelock"
   }
 }
+
