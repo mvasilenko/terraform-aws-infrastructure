@@ -24,7 +24,7 @@ resource "aws_security_group" "http_https" {
 }
 
 resource "aws_security_group" "local" {
-  description = "Allow local inbound traffic"
+  description = "Allow traffic inside VPC"
 
   vpc_id = module.vpc.vpc_id
   name   = "local"
@@ -37,9 +37,9 @@ resource "aws_security_group" "local" {
   }
 
   ingress {
-    protocol  = "-1"
-    from_port = 0
-    to_port   = 0
+    protocol    = "-1"
+    from_port   = 0
+    to_port     = 0
     cidr_blocks = ["172.20.0.0/20"]
   }
 

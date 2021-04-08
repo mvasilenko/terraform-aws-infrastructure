@@ -155,3 +155,30 @@ Run `terraform plan`
 
 Check changes, if they look good, apply it with `terraform apply`
 
+### DNS (not covered)
+
+For app to be available from the Internet, need to set resolve on desired hostname `flask.mvasilenko.me`
+to the LB CNAME 
+
+### Deploy application
+
+Make some changes in the app, like change "Hello world" to "Hello container" in `app.py`
+
+Rebuild app image
+
+```shell script
+export hash=$(git rev-parse --short HEAD)
+docker build --tag $AWS_ID.dkr.ecr.eu-west-1.amazonaws.com/flask-app:$hash app/
+docker push $AWS_ID.dkr.ecr.eu-west-1.amazonaws.com/flask-app:$hash
+```
+
+Deploy new version, updated image
+
+```shell script
+cd app/deploy
+terraform apply -var image_tag=$hash
+```
+
+Go to ECS, select our `app-dev` cluster, `flask-app` service, check that tasks are running with new image
+
+Open web page app

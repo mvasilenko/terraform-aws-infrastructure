@@ -3,6 +3,11 @@ data "aws_iam_policy_document" "flask_app" {
   statement {
     actions = [
       "ecr:GetAuthorizationToken",
+      "logs:CreateLogGroup",
+      "logs:CreateLogStream",
+      "logs:PutLogEvents",
+      "logs:DescribeLogGroups",
+      "logs:DescribeLogStreams",
     ]
 
     resources = [
